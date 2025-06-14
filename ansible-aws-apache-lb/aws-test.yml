@@ -1,5 +1,5 @@
 ---
-- name: Playbook test to create aws instance
+- name: Playbook test to create an aws instance
   hosts: localhost
   module_defaults:
     group/aws:
