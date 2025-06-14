@@ -1,4 +1,4 @@
 ---
-# Playbook to create simple instances of gce centos/apache with load balancing
-- import_playbook: gce-apache.yml
-- import_playbook: gce-lb.yml
+# Playbook to create simple instances of aws Linux with apache and load balancing
+- import_playbook: aws-apache.yml
+- import_playbook: aws-lb.yml

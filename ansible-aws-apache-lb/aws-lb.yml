@@ -1,17 +1,16 @@
 ---
-- name: Playbook to create gce load balancing instance
+- name: Playbook to create aws load balancing instance
   hosts: localhost
-  connection: local
-  gather_facts: True
-
-  vars:
-    service_account_email: \\*Your gce service account email*\\
-    credentials_file: \\*Your json credentials file*\\
-    project_id: \\*Your project id*\\
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      region: '{{ region }}'
 
   tasks:
-    - name: Create gce load balancer
-      gce_lb:
+    - name: Create aws load balancer
+      amazon.aws.ec2_instance:
+        key_name: "example-ssh-key"
         name: lbserver
         state: present
         region: us-central1
@@ -19,6 +18,4 @@
         httphealthcheck_name: hc
         httphealthcheck_port: 80
         httphealthcheck_path: "/"
-        service_account_email: "{{ service_account_email }}"
-        credentials_file: "{{ credentials_file }}"
-        project_id: "{{ project_id }}"
+
