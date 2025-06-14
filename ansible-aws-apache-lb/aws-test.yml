@@ -1,6 +1,14 @@
+# aws-test.yml
 ---
 - name: Playbook test to create an aws instance
   hosts: localhost
+  gather_facts: False
+
+  vars:
+    aws_access_key: "\\Your aws_access_key_id\\"
+    aws_secret_key: "\\Your aws_secret_access_key \\"
+    region: "\\Your aws region \\"
+
   module_defaults:
     group/aws:
       aws_access_key: '{{ aws_access_key }}'
@@ -8,7 +16,16 @@
       region: '{{ region }}'
 
   tasks:
-    - amazon.aws.ec2_instance:
-        key_name: "example-ssh-key"
-        image_id: "..."
+    - name: Test
+      amazon.aws.ec2_instance:
+        key_name: "\\Your Key Pair\\"
+        vpc_subnet_id: \\Your Default VPC\\
+        instance_type: t2.micro
+        security_group: default
+        network:
+          assign_public_ip: true
+        image_id: \\Your AMI ID\\
+        tags:
+          Environment: Testing
+      register: result
 
