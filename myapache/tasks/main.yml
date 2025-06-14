@@ -1,0 +1,54 @@
+---
+# tasks file for myapache
+
+- name: Instalar apache
+  ansible.builtin.yum:
+    name: httpd 
+    state: latest
+
+- name: Validar firewall
+  ansible.builtin.yum:
+    name: firewalld 
+    state: present
+
+- name: Inyectar archivo de configuración de apache
+  template:
+    src: apache_httpdconf.j2
+    dest: /etc/httpd/conf/httpd.conf
+    owner: root
+    group: root
+    mode: '0444'
+  notify: 
+    - reiniciar apache
+  when: apache_enable
+
+- name: Inyectar archivo index
+  template:
+    src: apache_indexhtml.j2
+    dest: /var/www/html/index.html
+    owner: root
+    group: root
+    mode: '0444'
+  when: apache_enable
+
+- name: Inicia y habilita apache
+  ansible.builtin.service:
+    name: httpd 
+    state: started
+    enabled: true
+  when: apache_enable
+
+- name: Inicia y habilita firewall
+  ansible.builtin.service:
+    name: firewalld 
+    state: started
+    enabled: true
+  when: apache_enable
+
+- name: Abre el puerto http en firewall
+  firewalld:
+    service: http
+    immediate: yes
+    permanent: yes
+    state: enabled
+  when: apache_enable
