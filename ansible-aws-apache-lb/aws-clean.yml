@@ -1,0 +1,37 @@
+---
+- name: Playbook to clean gce instances
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    service_account_email: \\*Your gce service account email*\\
+    credentials_file: \\*Your json credentials file*\\
+    project_id: \\*Your project id*\\
+    instance_names: web1,web2,web3
+
+  tasks:
+    - name: Delete gce load balancer
+      gce_lb:
+        name: lbserver
+        state: absent
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+    
+    - name: Delete gce instances
+      gce:
+        instance_names: "{{ instance_names }}"
+        state: absent
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+
+    - name: Delete firewall rule
+      gce_net:
+        name: default
+        fwname: "my-http-fw-rule"
+        state: absent
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"

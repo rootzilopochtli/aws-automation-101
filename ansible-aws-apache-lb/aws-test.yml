@@ -1,0 +1,23 @@
+---
+- name: Playbook test to create gce instance
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    service_account_email: \\*Your gce service account email*\\
+    credentials_file: \\*Your json credentials file*\\
+    project_id: \\*Your project id*\\
+    machine_type: n1-standard-1
+    image: centos-stream-8
+
+  tasks:
+    - name: Launch instances
+      gce:
+        instance_names: dev
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}" 
+

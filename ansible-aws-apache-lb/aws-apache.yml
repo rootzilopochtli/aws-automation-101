@@ -1,0 +1,65 @@
+---
+- name: Create gce webserver instances
+  hosts: localhost
+  connection: local
+  gather_facts: True
+
+  vars:
+    service_account_email: \\*Your gce service account email*\\
+    credentials_file: \\*Your json credentials file*\\
+    project_id: \\*Your project id*\\
+    instance_names: web1,web2,web3
+    machine_type: n1-standard-1
+    image: centos-stream-8
+
+  tasks:
+  - name: Create firewall rule to allow http traffic
+    gce_net:
+      name: default
+      fwname: "my-http-fw-rule"
+      allowed: tcp:80
+      state: present
+      src_range: "0.0.0.0/0"
+      target_tags: "http-server"
+      service_account_email: "{{ service_account_email }}"
+      credentials_file: "{{ credentials_file }}"
+      project_id: "{{ project_id }}"
+
+  - name: Create instances based on image {{ image }}  
+    gce:
+      instance_names: "{{ instance_names }}"
+      machine_type: "{{ machine_type }}"
+      image: "{{ image }}"
+      state: present
+      preemptible: true
+      tags: http-server
+      service_account_email: "{{ service_account_email }}"
+      credentials_file: "{{ credentials_file }}"
+      project_id: "{{ project_id }}"
+      metadata: '{"sshKeys":"\\*Your gce user: Your rsa public key*\\"}'
+    register: gce
+
+  - name: Save hosts data within a group
+    add_host:
+      hostname: "{{ item.public_ip }}"
+      groupname: gce_instances_temp
+    with_items: "{{ gce.instance_data }}"
+
+  - name: Wait for ssh to come up
+    wait_for: host={{ item.public_ip }} port=22 delay=10 timeout=60
+    with_items: "{{ gce.instance_data }}"
+
+  - name: Setting ip as instance fact
+    set_fact: host={{ item.public_ip }}
+    with_items: "{{ gce.instance_data }}"
+
+- name: Configure instance post-creation
+  hosts: gce_instances_temp
+  gather_facts: True
+  remote_user: \\*Your gce user*\\
+  become: yes
+  become_method: sudo
+
+  roles:
+
+    - \\*path_to_role*\\/myapache
